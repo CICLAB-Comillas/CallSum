@@ -1,0 +1,46 @@
+{
+    "Llamada": {
+        "Actitud": [
+            "positiva",
+            "neutra",
+            "negativa",
+            "agresiva",
+            "asertiva"
+        ],
+        "Conversaci\u00f3n": [
+            "larga",
+            "breve",
+            "normal"
+        ],
+        "Problema": [
+            "corte suministro luz",
+            "corte suministro gas",
+            "problema con el contador",
+            "cargo inesperado en la factura de luz",
+            "cargo inesperado en la factura de gas",
+            "cambio de tarifa de luz",
+            "cambio de tarifa de gas",
+            "recomendaci\u00f3n de tarifas",
+            "problema instalaci\u00f3n placas solares"
+        ],
+        "Resuelta": [
+            "s\u00ed",
+            "no"
+        ],
+        "Forma": [
+            "satisfactoria",
+            "amable",
+            "paciente",
+            "rapida"
+        ]
+    },
+    "Resumen": {
+        "Extension": [
+            "breve",
+            "conciso",
+            "extenso",
+            "en profundidad",
+            "detallado"
+        ]
+    }
+}

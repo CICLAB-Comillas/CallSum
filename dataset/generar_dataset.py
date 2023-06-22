@@ -40,16 +40,25 @@ parser.add_argument('-j','--json', help='Ruta con el archivo JSON con los parám
 # Número de batchs
 parser.add_argument('-b','--batches', help='Número de batches', default=1)
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
-openai.api_key = args.api_key
-N_LLAMADAS = int(args.num_iter)
-CSV_PATH = args.path
-JSON_PATH = args.json
-N_BATCHES = int(args.batches)
+# openai.api_key = args.api_key
+# N_LLAMADAS = int(args.num_iter)
+# CSV_PATH = args.path
+# JSON_PATH = args.json
+# N_BATCHES = int(args.batches)
+# N_BATCHES = N_BATCHES if N_LLAMADAS>=N_BATCHES else 1
+
+openai.api_key = get_API_KEY()
+N_LLAMADAS = 100
+CSV_PATH = os.path.join(FILE_PATH,"dataset.csv")
+JSON_PATH = os.path.join(FILE_PATH,"params.json")
+N_BATCHES = 10
 N_BATCHES = N_BATCHES if N_LLAMADAS>=N_BATCHES else 1
 
 CSV_PATH_METRICAS = CSV_PATH.replace(".csv","_metricas.csv")
+
+TIEMPO_ESPERA_TRAS_ERROR_LLAMADA_SEC = 5 #segundos
 
 ### ----------------------------------EXCEPCIONES---------------------------------------------
 class FormatoRespuestaExcepcion(Exception):
@@ -203,8 +212,21 @@ def generar_llamada(df_llamadas: DataFrame, df_metricas: DataFrame, llamada: int
     # Inicio temporizador llamada API Openai
     inicio = time.time()
 
-    # Realizar llamada a la API de ChatGPT
-    completion = ask_ChatGPT(prompt) # Respuesta
+    # Tiempo inicial de espera cuando se produce un error de conexión
+    tiempo_espera = TIEMPO_ESPERA_TRAS_ERROR_LLAMADA_SEC
+
+    while True:
+        try:
+            # Realizar llamada a la API de ChatGPT
+            completion = ask_ChatGPT(prompt) # Respuesta
+            break
+        except openai.error.APIError: 
+            # Si hay un error espera un tiempo determinado e intenta de nuevo la llamada
+            print(f"Conection error. Waiting for server...")
+            time.sleep(tiempo_espera) # Espera
+
+            # Incrementa el siguiente tiempo de espera
+            tiempo_espera += TIEMPO_ESPERA_TRAS_ERROR_LLAMADA_SEC
 
     # Fin temporizador
     tiempo = round(time.time()-inicio, 2)

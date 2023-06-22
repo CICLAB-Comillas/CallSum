@@ -51,6 +51,11 @@ N_BATCHES = N_BATCHES if N_LLAMADAS>=N_BATCHES else 1
 
 CSV_PATH_METRICAS = CSV_PATH.replace(".csv","_metricas.csv")
 
+### ----------------------------------EXCEPCIONES---------------------------------------------
+class FormatoRespuestaExcepcion(Exception):
+    """Error en el formato de la respuesta que devuelve chatGPT"""
+    pass
+
 ### ----------------------------------FUNCIONES---------------------------------------------
 
 # Reading params from JSON file
@@ -82,7 +87,7 @@ def generar_parametros_aleatorios_llamada() -> str:
     # Parámetros fijos
     call_params['Teléfono'] = generar_telf_aleatorio()
     call_params['Dirección'] = "Calle de la cuesta 15"
-    call_params['Empresa'] = "ABCDE"
+    call_params['Empresa'] = "Empresa"
     return call_params
 
 def generar_parametros_aleatorios_resumen() -> Dict[str, str]:
@@ -133,20 +138,23 @@ def procesar_completion(completion: str) -> Dict[str, str]:
 
     dict_llamadas = {}
 
-    # Obtener el contenido del mensaje (conversación y resumen)
-    contenido = completion.choices[0].message['content']
+    try:
+        # Obtener el contenido del mensaje (conversación y resumen)
+        contenido = completion.choices[0].message['content']
 
-    # Obtener el campo conversación de la respuesta
-    conversacion = contenido.split('[Conversación]')[1].split('[Resumen]')[0].strip()
-    conversacion = conversacion[1:] if conversacion[0] == ':' else conversacion
-    conversacion = conversacion[1:] if conversacion[0] == ' ' else conversacion
-    dict_llamadas["Transcripcion"] = conversacion
+        # Obtener el campo conversación de la respuesta
+        conversacion = contenido.split('[Conversación]')[1].split('[Resumen]')[0].strip()
+        conversacion = conversacion[1:] if conversacion[0] == ':' else conversacion
+        conversacion = conversacion[1:] if conversacion[0] == ' ' else conversacion
+        dict_llamadas["Transcripcion"] = conversacion
 
-    # Obtener el campo resumen de la respuesta
-    resumen = contenido.split("[Resumen]")[1].split("}")[0].strip()
-    resumen = resumen[1:] if resumen[0] == ':' else resumen
-    resumen = resumen[1:] if resumen[0] == ' ' else resumen
-    dict_llamadas["Resumen"] = resumen
+        # Obtener el campo resumen de la respuesta
+        resumen = contenido.split("[Resumen]")[1].split("}")[0].strip()
+        resumen = resumen[1:] if resumen[0] == ':' else resumen
+        resumen = resumen[1:] if resumen[0] == ' ' else resumen
+        dict_llamadas["Resumen"] = resumen
+    except IndexError:
+        raise FormatoRespuestaExcepcion()
 
     # Obtener el uso
     dict_metricas = dict(completion.usage)
@@ -209,8 +217,16 @@ def generar_llamada(df_llamadas: DataFrame, df_metricas: DataFrame, llamada: int
     # Crear tarea del task
     progreso_paso_batch_id_3 = progreso_paso_batch.add_task('',action='Procesando respuesta...')
 
-    # Obtener la conversación y el resumen en un diccionario
-    dict_llamada, dict_metricas = procesar_completion(completion)
+    try:
+        # Obtener la conversación y el resumen en un diccionario
+        dict_llamada, dict_metricas = procesar_completion(completion)
+    except FormatoRespuestaExcepcion:
+        # Eliminar las respuestas
+        progreso_paso_batch.remove_task(progreso_paso_batch_id_0)
+        progreso_paso_batch.remove_task(progreso_paso_batch_id_1)
+        progreso_paso_batch.remove_task(progreso_paso_batch_id_2)
+        progreso_paso_batch.remove_task(progreso_paso_batch_id_3)
+        raise
 
     # Añadir el resto de campos
     for param in list(PARAMS['Llamada'].keys()):
@@ -342,8 +358,11 @@ if __name__ == "__main__":
                 progreso_total_batch_id = progreso_total_batch.add_task('',total=llamadas_batch, name=batch)
 
                 for llamada in range(llamadas_batch):
-                    # Generar una llamada
-                    df_llamadas, df_metricas = generar_llamada(df_llamadas, df_metricas, llamada, batch)
+                    try:
+                        # Generar una llamada
+                        df_llamadas, df_metricas = generar_llamada(df_llamadas, df_metricas, llamada, batch)
+                    except FormatoRespuestaExcepcion:
+                        llamada -= -1
 
                     # Actualizar el número de llamadas
                     progreso_total_batch.update(progreso_total_batch_id, advance=1)
@@ -355,7 +374,6 @@ if __name__ == "__main__":
                     tiempo_acumulado_sec = int(time.time()-tiempo_inicial_sec)
                     llamadas_restantes = N_LLAMADAS - progreso_total._tasks[progreso_total_id].completed
                     progreso_total.update(progreso_total_id, name = actualizar_tiempo_restante(tiempo_acumulado_sec, llamada+1, llamadas_restantes))
-
                 # Guarda el df de llamadas en un csv
                 guardar_CSV(df_llamadas.iloc[-llamadas_batch:])
                 guardar_CSV(df_metricas.iloc[-llamadas_batch:], CSV_PATH_METRICAS) # Guardar métricas

@@ -46,23 +46,15 @@ parser.add_argument('-b','--batches', help='Número de batches', default=1)
 # Límite de gasto
 parser.add_argument('-l','--limit', help='Límite de gasto', default=None)
 
-# args = parser.parse_args()
+args = parser.parse_args()
 
-# openai.api_key = args.api_key
-# N_LLAMADAS = int(args.num_iter)
-# CSV_PATH = args.path
-# JSON_PATH = args.json
-# N_BATCHES = int(args.batches)
-# N_BATCHES = N_BATCHES if N_LLAMADAS>=N_BATCHES else 1
-# COSTE_LIMITE = float(args.limit)
-
-openai.api_key = get_API_KEY()
-N_LLAMADAS = 10
-CSV_PATH = os.path.join(FILE_PATH,"dataset.csv")
-JSON_PATH = os.path.join(FILE_PATH,"params.json")
-N_BATCHES = 3
+openai.api_key = args.api_key
+N_LLAMADAS = int(args.num_iter)
+CSV_PATH = args.path
+JSON_PATH = args.json
+N_BATCHES = int(args.batches)
 N_BATCHES = N_BATCHES if N_LLAMADAS>=N_BATCHES else 1
-COSTE_LIMITE = 0.0001
+COSTE_LIMITE = float(args.limit)
 
 CSV_PATH_METRICAS = CSV_PATH.replace(".csv","_metricas.csv")
 

@@ -2,17 +2,19 @@ import argparse
 import json
 import time
 import os
+from retry import retry
 from random import choice, randint
 from typing import Dict, List
 
 import datetime
 import openai
+from openai.error import APIError, Timeout, RateLimitError, APIConnectionError, ServiceUnavailableError
 import pandas as pd
 from pandas import DataFrame
 from rich.console import Group
 from rich.live import Live
 from rich.progress import (BarColumn, Progress, SpinnerColumn,
-                           TextColumn, TimeElapsedColumn, TimeRemainingColumn)
+                           TextColumn, TimeElapsedColumn)
 from rich.rule import Rule
 
 from secret_key import get_API_KEY
@@ -40,20 +42,13 @@ parser.add_argument('-j','--json', help='Ruta con el archivo JSON con los parám
 # Número de batchs
 parser.add_argument('-b','--batches', help='Número de batches', default=1)
 
-# args = parser.parse_args()
+args = parser.parse_args()
 
-# openai.api_key = args.api_key
-# N_LLAMADAS = int(args.num_iter)
-# CSV_PATH = args.path
-# JSON_PATH = args.json
-# N_BATCHES = int(args.batches)
-# N_BATCHES = N_BATCHES if N_LLAMADAS>=N_BATCHES else 1
-
-openai.api_key = get_API_KEY()
-N_LLAMADAS = 100
-CSV_PATH = os.path.join(FILE_PATH,"dataset.csv")
-JSON_PATH = os.path.join(FILE_PATH,"params.json")
-N_BATCHES = 10
+openai.api_key = args.api_key
+N_LLAMADAS = int(args.num_iter)
+CSV_PATH = args.path
+JSON_PATH = args.json
+N_BATCHES = int(args.batches)
 N_BATCHES = N_BATCHES if N_LLAMADAS>=N_BATCHES else 1
 
 CSV_PATH_METRICAS = CSV_PATH.replace(".csv","_metricas.csv")
@@ -124,6 +119,7 @@ def combinar_prompts(prompt_llamada, prompt_resumen) -> str:
     """
     return f"{prompt_llamada} {prompt_resumen}. Antes de la conversación incluye [Conversación] y antes del resumen [Resumen]."
 
+@retry((APIError, Timeout, RateLimitError, APIConnectionError, ServiceUnavailableError), delay=5, backoff=2, max_delay=1800)
 def ask_ChatGPT(prompt:str):
     """ Sends a request message as a `prompt` to OpenAI API. Params
         * `prompt`: text input to API
@@ -170,6 +166,7 @@ def procesar_completion(completion: str) -> Dict[str, str]:
 
     return (dict_llamadas, dict_metricas)
 
+@retry(FormatoRespuestaExcepcion, tries=10)
 def generar_llamada(df_llamadas: DataFrame, df_metricas: DataFrame, llamada: int, batch: int) -> DataFrame:
     """ Genera una nueva fila del dataset con la conversación, resumen y el tipo de resumen
     """
@@ -212,21 +209,8 @@ def generar_llamada(df_llamadas: DataFrame, df_metricas: DataFrame, llamada: int
     # Inicio temporizador llamada API Openai
     inicio = time.time()
 
-    # Tiempo inicial de espera cuando se produce un error de conexión
-    tiempo_espera = TIEMPO_ESPERA_TRAS_ERROR_LLAMADA_SEC
-
-    while True:
-        try:
-            # Realizar llamada a la API de ChatGPT
-            completion = ask_ChatGPT(prompt) # Respuesta
-            break
-        except openai.error.APIError: 
-            # Si hay un error espera un tiempo determinado e intenta de nuevo la llamada
-            print(f"Conection error. Waiting for server...")
-            time.sleep(tiempo_espera) # Espera
-
-            # Incrementa el siguiente tiempo de espera
-            tiempo_espera += TIEMPO_ESPERA_TRAS_ERROR_LLAMADA_SEC
+    # Llamada a la API
+    completion = ask_ChatGPT(prompt) # Respuesta
 
     # Fin temporizador
     tiempo = round(time.time()-inicio, 2)
@@ -320,7 +304,7 @@ def actualizar_tiempo_restante(tiempo_acumulado: int, llamadas_completadas: int,
 
 # Barra de progreso total
 progreso_total = Progress(
-    TextColumn('[bold blue]Progreso dataset: [bold purple]{task.percentage:.0f}% ({task.completed}/{task.total}) '),
+    TextColumn('[bold blue]Progreso dataset: [bold purple]{task.percentage:.2f}% ({task.completed}/{task.total}) '),
     BarColumn(),
     TimeElapsedColumn(),
     TextColumn('tiempo restante: [bold cyan]{task.fields[name]}'),
@@ -380,11 +364,8 @@ if __name__ == "__main__":
                 progreso_total_batch_id = progreso_total_batch.add_task('',total=llamadas_batch, name=batch)
 
                 for llamada in range(llamadas_batch):
-                    try:
-                        # Generar una llamada
-                        df_llamadas, df_metricas = generar_llamada(df_llamadas, df_metricas, llamada, batch)
-                    except FormatoRespuestaExcepcion:
-                        llamada -= -1
+                    # Generar una llamada
+                    df_llamadas, df_metricas = generar_llamada(df_llamadas, df_metricas, llamada, batch)
 
                     # Actualizar el número de llamadas
                     progreso_total_batch.update(progreso_total_batch_id, advance=1)
@@ -394,8 +375,9 @@ if __name__ == "__main__":
 
                     # Actualizar tiempo restante
                     tiempo_acumulado_sec = int(time.time()-tiempo_inicial_sec)
-                    llamadas_restantes = N_LLAMADAS - progreso_total._tasks[progreso_total_id].completed
-                    progreso_total.update(progreso_total_id, name = actualizar_tiempo_restante(tiempo_acumulado_sec, llamada+1, llamadas_restantes))
+                    llamadas_completadas = progreso_total._tasks[progreso_total_id].completed
+                    llamadas_restantes = N_LLAMADAS - llamadas_completadas
+                    progreso_total.update(progreso_total_id, name = actualizar_tiempo_restante(tiempo_acumulado_sec, llamadas_completadas, llamadas_restantes))
                 # Guarda el df de llamadas en un csv
                 guardar_CSV(df_llamadas.iloc[-llamadas_batch:])
                 guardar_CSV(df_metricas.iloc[-llamadas_batch:], CSV_PATH_METRICAS) # Guardar métricas

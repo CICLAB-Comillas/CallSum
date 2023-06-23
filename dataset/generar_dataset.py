@@ -81,7 +81,7 @@ class CosteLimiteAlcanzado(Exception):
 
     def __init__(self, coste_limite):
         self.coste_limite = coste_limite
-        self.msg = f"Se ha alcanzado el limite de ${self.coste_limite}."
+        self.msg = f"Limite de ${self.coste_limite} alcanzado."
         super().__init__(self.msg)
 
 ### ----------------------------------FUNCIONES---------------------------------------------
@@ -417,7 +417,7 @@ if __name__ == "__main__":
                 guardar_CSV(df_metricas.iloc[-llamadas_batch:], CSV_PATH_METRICAS) # Guardar métricas
 
         except Exception as e: # work on python 3.x
-            print(f"Se ha producido el error: {e}")
+            print(f"Se ha producido un error: {e}")
             # Guarda el df de llamadas en un csv
             guardar_CSV(df_llamadas.iloc[-llamadas_batch:])
             guardar_CSV(df_metricas.iloc[-llamadas_batch:], CSV_PATH_METRICAS) # Guardar métricas

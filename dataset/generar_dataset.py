@@ -54,7 +54,7 @@ CSV_PATH = args.path
 JSON_PATH = args.json
 N_BATCHES = int(args.batches)
 N_BATCHES = N_BATCHES if N_LLAMADAS>=N_BATCHES else 1
-COSTE_LIMITE = float(args.limit)
+COSTE_LIMITE = float(args.limit) if args.limit is not None else args.limit
 
 CSV_PATH_METRICAS = CSV_PATH.replace(".csv","_metricas.csv")
 

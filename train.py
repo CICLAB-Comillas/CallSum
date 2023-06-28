@@ -1,8 +1,4 @@
-import transformers
-import textwrap
 from transformers import LlamaTokenizer, LlamaForCausalLM
-import os
-import sys
 from typing import List
 
 from peft import (
@@ -15,10 +11,10 @@ from peft import (
 import torch
 from datasets import load_dataset
 import pandas as pd
-
-from pylab import rcParams
 import json
-import pandas as pd
+from huggingface_hub import login, logout
+import wandb
+
 
 ### ----------------------------------FUNCIONES---------------------------------------------
 def generate_prompt(data_point):
@@ -61,12 +57,14 @@ def generate_and_tokenize_prompt(data_point):
 
 if __name__ == "__main__":
 
+    
     if torch.cuda.is_available():
         device = "cuda"
     else:
         device = "cpu"
 
-    df = pd.read_csv("dataset.csv", sep = ';', encoding = 'utf-8')
+
+    df = pd.read_csv("dataset10.csv", sep = ';', encoding = 'utf-8')
 
     dataset_data = [
         {
@@ -120,6 +118,20 @@ if __name__ == "__main__":
     TRAIN_STEPS = 100
     OUTPUT_DIR = "experiments"
 
+    wandb.login(key='ceb9a7d70eb557ab0c262e219d2d1a19575dbf1f')
+    wandb.init(
+        # Nombre del proyecto
+        project="alpaca", 
+        # Nombre de la ejecución
+        name=f"run-1",
+        # Información de hiperparámetros y metadatos
+        config={
+            "learning_rate": LEARNING_RATE,
+            "architecture": "Alpaca",
+            "dataset": "calls10k_1",
+            "notes": "Primer intento de entrenamiento del modelo con 10 conversaciones",
+        })
+    
     model = prepare_model_for_int8_training(model)
     config = LoraConfig(
         r=LORA_R,
@@ -144,12 +156,12 @@ if __name__ == "__main__":
         optim="adamw_torch",
         evaluation_strategy="steps",
         save_strategy="steps",
-        eval_steps=14,
-        save_steps=14,
+        eval_steps=1,
+        save_steps=1,
         output_dir=OUTPUT_DIR,
         save_total_limit=3,
         load_best_model_at_end=True,
-        report_to="tensorboard"
+        report_to="wandb"
     )
 
     # For the batches
@@ -175,4 +187,14 @@ if __name__ == "__main__":
     model = torch.compile(model)
 
     trainer.train()
+    wandb.finish()
+    wandb.alert(
+        title = "Entrenamiento terminado",
+        text = "El entrenamiento ha terminado correctamente",
+        level = wandb.AlertLevel.INFO
+    )
     model.save_pretrained(OUTPUT_DIR)
+
+    login(token = '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')
+    model.push_to_hub("CICLAB-Comillas/AlpaCalls", use_auth_token=True)
+    logout()

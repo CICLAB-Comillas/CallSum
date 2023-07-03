@@ -162,6 +162,9 @@ cython_debug/
 # Project
 /dataset/dataset.csv
 /dataset/dataset_metricas.csv
+/experiments
+/wandb
+/alpaca-conv-summary-dataset.json
 
 # Secrets
 /secrets.json

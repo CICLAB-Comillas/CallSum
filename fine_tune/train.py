@@ -65,7 +65,7 @@ else:
     device = "cpu"
 
 
-df = pd.read_csv("dataset10.csv", sep = ';', encoding = 'utf-8')
+df = pd.read_csv(os.path.join(PROJECT_PATH, "dataset.csv"), sep = ';', encoding = 'utf-8')
 
 dataset_data = [
     {
@@ -119,7 +119,7 @@ BATCH_SIZE = 128
 MICRO_BATCH_SIZE = 4
 GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
 LEARNING_RATE = 3e-4
-TRAIN_STEPS = 100
+TRAIN_STEPS = 10000
 OUTPUT_DIR = "experiments"
 
 wandb.login(key=SECRETS["wandb"])
@@ -152,7 +152,7 @@ model.print_trainable_parameters()
 training_arguments = transformers.TrainingArguments(
     per_device_train_batch_size=MICRO_BATCH_SIZE,
     gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
-    warmup_steps=30,
+    warmup_steps=500,
     max_steps=TRAIN_STEPS,
     learning_rate=LEARNING_RATE,
     fp16=True,
@@ -160,8 +160,8 @@ training_arguments = transformers.TrainingArguments(
     optim="adamw_torch",
     evaluation_strategy="steps",
     save_strategy="steps",
-    eval_steps=1,
-    save_steps=1,
+    eval_steps=250,
+    save_steps=1000,
     output_dir=OUTPUT_DIR,
     save_total_limit=3,
     load_best_model_at_end=True,

@@ -163,8 +163,9 @@ cython_debug/
 /dataset/dataset.csv
 /dataset/dataset_metricas.csv
 /experiments
+/test-calls-summarization
 /wandb
-/alpaca-conv-summary-dataset.json
+alpaca-conv-summary-dataset.json
 
 # Secrets
-/secrets.json
+secrets.json

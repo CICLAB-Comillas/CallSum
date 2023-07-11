@@ -14,8 +14,7 @@ import pandas as pd
 from pandas import DataFrame
 from rich.console import Group
 from rich.live import Live
-from rich.progress import (BarColumn, Progress, SpinnerColumn,
-                           TextColumn, TimeElapsedColumn)
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.rule import Rule
 
 from secret_key import get_API_KEY
@@ -32,7 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-k','--api_key', help='OpenAI API key', default=get_API_KEY())
 
 # Número de llamadas a generar
-parser.add_argument('-n', '--num_iter',help='Nº llamadas a generar', required=True)
+parser.add_argument('-n', '--num_iter',help='Nº llamadas a generar', type= int, required=True)
 
 # Path del CSV
 parser.add_argument('-p','--path', help='Ruta para guardado del archivo CSV generado', default=os.path.join(FILE_PATH,"dataset.csv"))
@@ -41,20 +40,20 @@ parser.add_argument('-p','--path', help='Ruta para guardado del archivo CSV gene
 parser.add_argument('-j','--json', help='Ruta con el archivo JSON con los parámetros para las llamadas', default=os.path.join(FILE_PATH,"params.json"))
 
 # Número de batchs
-parser.add_argument('-b','--batches', help='Número de batches', default=1)
+parser.add_argument('-b','--batches', help='Número de batches', type=int, default=1)
 
 # Límite de gasto
-parser.add_argument('-l','--limit', help='Límite de gasto', default=None)
+parser.add_argument('-l','--limit', help='Límite de gasto', type=float, default=None)
 
 args = parser.parse_args()
 
 openai.api_key = args.api_key
-N_LLAMADAS = int(args.num_iter)
+N_LLAMADAS = args.num_iter
 CSV_PATH = args.path
 JSON_PATH = args.json
-N_BATCHES = int(args.batches)
+N_BATCHES = args.batches
 N_BATCHES = N_BATCHES if N_LLAMADAS>=N_BATCHES else 1
-COSTE_LIMITE = float(args.limit) if args.limit is not None else args.limit
+COSTE_LIMITE = args.limit
 
 CSV_PATH_METRICAS = CSV_PATH.replace(".csv","_metricas.csv")
 
@@ -366,7 +365,7 @@ if __name__ == "__main__":
     coste_acumulado = 0.0 # Coste acumulado inicial
 
     # Tarea del progreso total
-    progreso_total_id = progreso_total.add_task(description=f'[bold #AAAAA](batch {0} de {N_BATCHES})', total=N_LLAMADAS,name = '-:--:--', action="$0.00")
+    progreso_total_id = progreso_total.add_task(description=f'[bold #AAAAA](batch {0} de {N_BATCHES})', total=N_LLAMADAS, name = '-:--:--', action="$0.00")
 
     with live:
         try:

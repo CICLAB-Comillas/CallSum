@@ -162,3 +162,4 @@ cython_debug/
 # Project
 /dataset/dataset.csv
 /dataset/dataset_metricas.csv
+/secrets.json

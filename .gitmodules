@@ -1,0 +1,3 @@
+[submodule "SynthAI-Datasets"]
+	path = synthai_datasets
+	url = https://github.com/CICLAB-Comillas/SynthAI-Datasets.git

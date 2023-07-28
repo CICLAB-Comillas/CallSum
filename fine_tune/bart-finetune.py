@@ -33,18 +33,17 @@ else:
 with open("secrets.json", "r") as f:
     SECRETS = json.load(f)
 
-model_checkpoint = "philschmid/bart-large-cnn-samsum"
-
+MODEL_CHECKPOINT = "philschmid/bart-large-cnn-samsum"
 
 # LOADING THE DATASET
+
 train_datasets = load_dataset("CICLAB-Comillas/calls_10k_v1",sep=";")
 eval_datasets = load_dataset("Jatme26/test-conv-dataset",sep=";")
 
 
-
 # PREPROCESSING THE DATA
 
-tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_CHECKPOINT)
 
 max_input_length = 1024
 max_target_length = 256
@@ -55,9 +54,9 @@ tokenized_eval_datasets = eval_datasets.map(preprocess_function, batched=True)
 
 # FINE-TUNING THE MODEL
 
-model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
+model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_CHECKPOINT)
 
-
+# Definition of Training Arguments
 BATCH_SIZE = 64
 MICRO_BATCH_SIZE = 4
 GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
@@ -67,43 +66,37 @@ TRAIN_STEPS = 10000
 
 wandb.login(key=SECRETS["wandb"])
 wandb.init(
-    # Nombre del proyecto
+    # Project name
     project="bart",
-    # Nombre de la ejecución
+    # Project id
     id=datetime.now().strftime('%d%m%y%H%M'),
+    # Run name
     name=datetime.now().strftime('%d/%m/%y %H:%M'),
-    # Información de hiperparámetros y metadatos
+    # Metadata info
     config={
         "learning_rate": LEARNING_RATE,
         "architecture": "BART",
         "dataset": "calls10k_1",
-        "notes": "Primer intento de entrenamiento del modelo",
+        "notes": "First training try of the model",
     })
 
-batch_size = BATCH_SIZE
 args = Seq2SeqTrainingArguments(
     evaluation_strategy = "steps",
     save_strategy="steps",
     learning_rate=LEARNING_RATE,
     per_device_train_batch_size=MICRO_BATCH_SIZE,
-    per_device_eval_batch_size=batch_size,
+    per_device_eval_batch_size=BATCH_SIZE,
     gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
     warmup_steps=30,
     max_steps=TRAIN_STEPS,
     logging_steps=5,
-    #optim="adamw_torch",
     eval_steps=250,
     save_steps=1000,
     output_dir="test-calls-summarization",
     save_total_limit=3,
     load_best_model_at_end=True,
     report_to="wandb",
-
-    #weight_decay=0.01,
-    #num_train_epochs=3,
-    #predict_with_generate=True,
     fp16=True,
-    #run_name="bart-large-cnn-samsum-BARTOLO"  # name of the W&B run (optional)
 )
 
 data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
@@ -122,8 +115,8 @@ trainer.train()
 trainer.evaluate()
 
 wandb.alert(
-    title = "Entrenamiento terminado",
-    text = "El entrenamiento ha terminado correctamente",
+    title = "Training finished",
+    text = "Training was completed correctly",
     level = wandb.AlertLevel.INFO
 )
 wandb.finish()

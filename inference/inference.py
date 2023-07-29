@@ -186,7 +186,7 @@ with gr.Blocks() as demo:
     gr.Markdown("Summarization App for Customer Service Conversations ☎️")
     with gr.Tab("Demo ℹ"):
         with gr.Row():
-            transcription=gr.Textbox(lines=25, label="Transcription", placeholder="Place the transcription here...")
+            transcription=gr.Textbox(lines=25, label="Transcription", placeholder="Paste the transcription here...")
             summary = gr.Textbox(lines=25, label="Summary", placeholder="The summary will appear here...")
         demo_btn = gr.Button("Summarize")
         demo_btn.click(fn=summarize, inputs=transcription, outputs=summary)
@@ -200,7 +200,7 @@ with gr.Blocks() as demo:
         with gr.Row():
             dir = gr.File(label="Input files", file_count="multiple", file_types=[".transcription",".csv"])
             with gr.Column():
-                completion = gr.Textbox(label="Completion", placeholder="Place the files at the 'Input folder box'")
+                completion = gr.Textbox(label="Completion", placeholder="Place the files at the 'Input files' box")
                 output_file = gr.File(label="Output file",file_count="single")
         directory_button = gr.Button("Summarize all")
         directory_button.click(fn=summarize_multiple, inputs=dir, outputs=[completion,output_file])
@@ -208,15 +208,15 @@ with gr.Blocks() as demo:
         with gr.Row():
             dir = gr.File(label="Input folder", file_count="directory")
             with gr.Column():
-                completion = gr.Textbox(label="Completion", placeholder="Place a folder at the 'Input folder box'")
+                completion = gr.Textbox(label="Completion", placeholder="Place a folder at the 'Input folder' box")
                 output_file = gr.File(label="Output file",file_count="single")
         directory_button = gr.Button("Summarize all")
         directory_button.click(fn=summarize_multiple, inputs=dir, outputs=[completion,output_file])
 
     with gr.Accordion("💡 For more details click here!", open=False):
-        gr.Markdown("1. In first tab you can try a demo to summarize a conversation by simply pasting the transcript from clipboard.\n\
-                    2. The second allows you to summarize the content of a conversation from a .transcription or .csv file.\n\
-                    3. In the third tab you can upload multiple files and generate summaries for each of them at the same time. In addition, it saves the result in a CSV file that you can download directly from the interface.\n\
+        gr.Markdown("1. In the first tab you can try a demo to summarize a conversation by simply pasting the transcript from the clipboard.\n\
+                    2. The second tab allows you to summarize the content of a conversation from a .transcription or .csv file.\n\
+                    3. In the third tab you can upload multiple files and generate summaries for each one of them at the same time. In addition, it saves the result in a CSV file that you can download directly from the interface.\n\
                     4. The fourth and last window works similarly to the previous one, only that it allows you to drag a folder instead of several files separately.")
 
 demo.launch()

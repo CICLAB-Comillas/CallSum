@@ -1,4 +1,4 @@
-# CallSum: NLP App for Customer Service Conversation Summarization ☎️
+# CallSum ☎️📖: NLP App for Customer Service Conversation Summarization 
 CallSum is a repository for summarization of phone calls. 
 
 <!-- TABLE OF CONTENTS -->
@@ -95,9 +95,11 @@ So the ncode for executing the preprocessing functionality is:
 python preprocess.py -i <input_dir>
 ```
 
-Here is a video of the execution of the code for the preprocessing of 128 transcript files:
+Here is a video of the execution of the code for the preprocessing of 128 *.transcription* files, located at *transcriptions* dir:
 
+https://github.com/CICLAB-Comillas/CallSum/assets/59868153/8a3317cd-bf96-4f7c-b22d-87cb3c766d11
 
+After running, the output file is generated as **transcription.csv**.
 
 ## Fine tune 🎨
 

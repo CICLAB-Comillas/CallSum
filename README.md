@@ -127,7 +127,7 @@ http://127.0.0.1:7860.
 
 Just **click on it** to follow the link and a new tab with the GUI will be opened in browser. You should see something similar to this: 
 
-TODO:Add GUI image
+![GUI example](https://github.com/CICLAB-Comillas/CallSum/assets/59868153/7683f9d0-d6be-4259-955d-e571fe0e8db0)
 
 At the top there are 4 tabs, each of one has an unique operation mode. We recommend you trying the demo first, it shows more visually how is the model output.
 
@@ -138,11 +138,13 @@ At the top there are 4 tabs, each of one has an unique operation mode. We recomm
 This one is the simplest. You only have to copy the conversation input as plain text, paste it from the clipboard in the `Transcription` Textbox (left), then click on the `Summarize` button and wait until the output appears in the `Summary` Textbox (right). 
 
 This video shows how to do it:
+
 https://github.com/CICLAB-Comillas/CallSum/assets/59868153/5125a9e7-c967-440e-ba64-156839c46b13
 
 #### Summarize single files 🗒️
 
-This second tab has 
+This second tab has ...
+
 https://github.com/CICLAB-Comillas/CallSum/assets/59868153/2138e16d-8520-4b3c-b349-10cd6d10c572
 
 #### Summarize multiple files 📦

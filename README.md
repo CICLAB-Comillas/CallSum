@@ -17,12 +17,12 @@ CallSum is a repository for summarization of phone calls.
 - [Developers 🔧](#developers-)
 
 
-# About the project ℹ️
+## About the project ℹ️
 
 ***CallSum*** contains explanations of the development pipeline, including: (i) preprocessing the dataset, (ii) fine tuning a BART model with that dataset and, (iii) performing inference on the resulting model.
 
 
-# Libraries and dependencies 📚
+## Libraries and dependencies 📚
 
  > It is recommended to use Python version 3.10.11 to avoid possible incompatibilities with dependencies and libraries
 
@@ -31,10 +31,6 @@ The first step is to install the required dependencies. Fortunately, the `requir
 ```bash
 pip install -r requirements.txt
 ```
-
-
-# Pipeline
-
 
 ## Fine tune 🎨
 
@@ -78,7 +74,29 @@ Once you have all the requirements installed, the `secrets.json` file with your 
 python finetune.py
 ```
 
-# Developers 🔧
+## Inference ✍️
+
+### How to use⏩
+
+The Gradio App has 4 tabs, each of one has an unique operation mode. 
+
+#### Summarize demo ℹ️
+
+https://github.com/CICLAB-Comillas/CallSum/assets/59868153/5125a9e7-c967-440e-ba64-156839c46b13
+
+#### Summarize single files 🗒️
+
+https://github.com/CICLAB-Comillas/CallSum/assets/59868153/2138e16d-8520-4b3c-b349-10cd6d10c572
+
+#### Summarize multiple files 📦
+
+https://github.com/CICLAB-Comillas/CallSum/assets/59868153/b478791f-6d91-424e-a07d-5ab125091691
+
+#### Summarizing all files in a folder 📁
+
+https://github.com/CICLAB-Comillas/CallSum/assets/59868153/915e5baa-ff08-4006-b16f-361985cfe89e
+
+## Developers 🔧
 
 We would like to thank you for taking the time to read about this project.
 

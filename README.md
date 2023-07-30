@@ -2,19 +2,20 @@
 CallSum is a repository for summarization of phone calls. 
 
 <!-- TABLE OF CONTENTS -->
-- [About the project ℹ️](#about-the-project-ℹ️)
-- [Libraries and dependencies 📚](#libraries-and-dependencies-)
-- [Pipeline](#pipeline-)
-    - [Preprocesing 🖌️](#fine-tune-)
-        - [How it works ⚙️](#how-it-works-preprocessing-)
-        - [How to use ⏩](#how-to-use-preprocessing-)
-    - [Fine tune 🎨](#fine-tune-)
-        - [How it works ⚙️](#how-it-works-finetune-)
-        - [How to use ⏩](#how-to-use-finetune-)
-    - [Inference 🖼️](#inference-)
-        - [How it works ⚙️](#how-it-works-inference-)
-        - [How to use ⏩](#how-to-use-inference-)
-- [Developers 🔧](#developers-)
+- [CallSum ☎️](#callsum-️)
+  - [About the project ℹ️](#about-the-project-ℹ️)
+  - [Libraries and dependencies 📚](#libraries-and-dependencies-)
+  - [Generate synthetic data samples](#generate-synthetic-data-samples)
+  - [Fine tune 🎨](#fine-tune-)
+    - [How it works ⚙️](#how-it-works-️)
+    - [How to use ⏩](#how-to-use-)
+  - [Inference ✍️](#inference-️)
+    - [How to use⏩](#how-to-use)
+      - [Summarize demo ℹ️](#summarize-demo-ℹ️)
+      - [Summarize single files 🗒️](#summarize-single-files-️)
+      - [Summarize multiple files 📦](#summarize-multiple-files-)
+      - [Summarizing all files in a folder 📁](#summarizing-all-files-in-a-folder-)
+  - [Developers 🔧](#developers-)
 
 
 ## About the project ℹ️
@@ -31,6 +32,43 @@ The first step is to install the required dependencies. Fortunately, the `requir
 ```bash
 pip install -r requirements.txt
 ```
+
+## Generate synthetic data samples
+
+To generate synthetic data samples of client conversation, we have used [SynthAI-Datasets 🤖](https://github.com/CICLAB-Comillas/SynthAI-Datasets), which is included as a **submodule** of this repo. To initialize it, just execute the following command from a GIT terminal:
+
+```bash
+git submodule init
+```
+
+Here is an example of a generated synthetic conversation using *SynthAI-Datasets*:
+```
+"Cliente: ¡Hola! Quería ponerme en contacto con la empresa.
+
+Agente: ¡Hola! ¿En qué le puedo ayudar?
+
+Cliente: Estoy llamando para reportar un problema de cambio de tarifa de luz.
+
+Agente: Está bien, ¿puede proporcionarme su número de teléfono y dirección para seguir adelante?
+
+Cliente: Sí, mi número de teléfono es +34 681382011 y mi dirección es Calle de la cuesta 15.
+
+Agente: Muchas gracias. Por favor, déjeme verificar los detalles de su cuenta. ¿Tiene alguna tarifa específica en mente?
+
+Cliente: Estoy interesado en cambiar a la tarifa diurna.
+
+Agente: Muy bien. Por favor, permita que verifique si esa tarifa se ajusta a sus necesidades.
+
+Agente: ¡He aquí! Hemos verificado sus detalles y hemos encontrado que la tarifa diurna es la mejor para usted. ¿Desea cambiar a esa tarifa?
+
+Cliente: Sí, por favor.
+
+Agente: Está hecho. ¿Hay algo más en lo que le pueda ayudar?
+
+Cliente: No, eso es todo. Muchas gracias por la ayuda.
+
+Agente: De nada. ¡Que tenga un buen día!
+``` 
 
 ## Fine tune 🎨
 
@@ -54,7 +92,7 @@ The keys need to be stored in a `secrets.json` file in the same directory as the
 > 🚨 Important reminder: Be careful not to upload your keys. Don't worry, we have taken it into account and this file is included in the .gitignore file so that they are not uploaded in any commit.
 
 
-Both datasets that are going to be loaded, the one for training and the one for evaluation, need to have the fields 'Transcripcion' and 'Resumen' so that the code works properly. If you need to change these fieldnames (maybe you don't have access to changing the fieldnames in the datasets) it is as easy as changing those names in the ***preprocess_function*** function.
+Both datasets that are going to be loaded, the one for training and the one for evaluation, need to have the fields `Transcripcion` and `Resumen` so that the code works properly. If you need to change these fieldnames (maybe you don't have access to changing the fieldnames in the datasets) it is as easy as changing those names in the ***preprocess_function*** function.
 
 > ℹ️ The datasets used for training are synthetic datasets generated with the OPENAI API exclusively for this task, they do not contain any sensitive information.
 
@@ -70,22 +108,41 @@ After the fine tuning is finished, a wandb alert is thrown to notify the members
 ### How to use ⏩
 Once you have all the requirements installed, the `secrets.json` file with your keys created and the corresponding changes in the code made (if needed), you can easily run the code with the following command in a console.
 
-```console
+```bash
 python finetune.py
 ```
 
 ## Inference ✍️
 
-### How to use⏩
+Finally, the last step is inference, which consists of introducing conversations into the model and collecting the results. This process can be tedious, but fortunately, the GUI developed might make the things easier. 
 
-The Gradio App has 4 tabs, each of one has an unique operation mode. 
+### How to use⏩
+But first you shall run the inference code:
+```bash
+python inference.py
+```
+
+After a few seconds, it will advise you that the service has been deployed and it's running on local URL:
+http://127.0.0.1:7860. 
+
+Just **click on it** to follow the link and a new tab with the GUI will be opened in browser. You should see something similar to this: 
+
+TODO:Add GUI image
+
+At the top there are 4 tabs, each of one has an unique operation mode. We recommend you trying the demo first, it shows more visually how is the model output.
+
+> 💡 At the bottom of the page there is an accordion element, click on it and it will display a brief description of tab.
 
 #### Summarize demo ℹ️
 
+This one is the simplest. You only have to copy the conversation input as plain text, paste it from the clipboard in the `Transcription` Textbox (left), then click on the `Summarize` button and wait until the output appears in the `Summary` Textbox (right). 
+
+This video shows how to do it:
 https://github.com/CICLAB-Comillas/CallSum/assets/59868153/5125a9e7-c967-440e-ba64-156839c46b13
 
 #### Summarize single files 🗒️
 
+This second tab has 
 https://github.com/CICLAB-Comillas/CallSum/assets/59868153/2138e16d-8520-4b3c-b349-10cd6d10c572
 
 #### Summarize multiple files 📦
@@ -93,6 +150,8 @@ https://github.com/CICLAB-Comillas/CallSum/assets/59868153/2138e16d-8520-4b3c-b3
 https://github.com/CICLAB-Comillas/CallSum/assets/59868153/b478791f-6d91-424e-a07d-5ab125091691
 
 #### Summarizing all files in a folder 📁
+
+> 💡 We strongly recommend using the *click-select* method to upload the input files, rather than the drag-and-drop one, as it has been found to be buggy (files stuck in *uploading...* state). 
 
 https://github.com/CICLAB-Comillas/CallSum/assets/59868153/915e5baa-ff08-4006-b16f-361985cfe89e
 
